@@ -1,0 +1,114 @@
+﻿@model BBBHackton.Data.Model.Perfil
+
+@{
+    ViewBag.Title = "Index";
+}
+@*<link type="text/css" rel="stylesheet" href="~/Content/style.css">*@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link href='http://fonts.googleapis.com/css?family=Rokkitt:400,700|Lato:400,300' rel='stylesheet' type='text/css'>
+<div id="top">
+    <div id="cv" class="instaFade" style="box-shadow:1px 4px 5px 2px #888888;">
+        <div class="mainDetails">
+            <div id="headshot" class="quickFade">
+                <img class="img-circle" src="@Model.Foto" alt="@Model.FullName" />
+            </div>
+
+            <div id="name">
+                <h1 class="quickFade delayTwo">@Model.FullName</h1>
+                <h3>Idade: @(DateTime.Now.Year - Model.DataNascimento.Year)</h3>
+            </div>
+
+            <div id="contactDetails" class="quickFade delayFour">
+                <h3>Redes sociais</h3>
+                <a class="btn btn-social-icon btn-facebook" target="_blank" href="@Model.LinkSocialMedia">
+                    <span class="fa fa-facebook"></span>
+                </a>
+
+            </div>
+            <div class="clear"></div>
+        </div>
+
+        <div id="mainArea" class="quickFade delayFive">
+            <section>
+                <div class="sectionTitle">
+                    <h1>Formação Acadêmica</h1>
+                </div>
+
+                <div class="sectionContent">
+                    @foreach (var item in Model.Cursos)
+                    {
+                        <article>
+                            <h2>@item.NomeCurso - @item.Universidade</h2>
+                            <p class="subDetails">Inicio - @item.DataInicio.ToString("dd/MM/yyyy")</p>
+                            <p class="subDetails">Conclusão - @item.DataConclusao.ToString("dd/MM/yyyy")</p>
+                            <p>@item.Atribuicao</p>
+                        </article>
+                               
+                    }
+                </div>
+                <div class="clear"></div>
+            </section>
+
+
+
+            <section>
+                <div class="sectionTitle">
+                    <h1>Experiência de Trabalho</h1>
+                </div>
+
+                <div class="sectionContent">
+                    @foreach (var item in Model.Experiencias)
+                    {
+                        <article>
+                            <h2>@item.Cargo na empresa: <strong>@item.Empresa</strong></h2>
+                            <p class="subDetails">@item.DataInicio.ToString("MMM/yyyy") - @(item.DataFinal == null ?  "Até o momento": item.DataFinal.ToString("MMM/yyyy"))</p>
+                            <p>@item.Atribuicao</p>
+                        </article>
+
+                    }         
+                                        
+                </div>
+                <div class="clear"></div>
+            </section>
+            <section>
+                <article>
+                    <div class="sectionTitle">
+                        <h1>Perfil Pessoal</h1>
+                    </div>
+
+                    <div class="sectionContent">
+                        <p>@Model.AboutMe</p>
+                    </div>
+                </article>
+                <div class="clear"></div>
+            </section>
+
+
+            @*<section>
+                    <div class="sectionTitle">
+                        <h1>Key Skills</h1>
+                    </div>
+
+                    <div class="sectionContent">
+                        <ul class="keySkills">
+                            <li>A Key Skill</li>
+                            <li>A Key Skill</li>
+                            <li>A Key Skill</li>
+                            <li>A Key Skill</li>
+                            <li>A Key Skill</li>
+                            <li>A Key Skill</li>
+                            <li>A Key Skill</li>
+                            <li>A Key Skill</li>
+                        </ul>
+                    </div>
+                    <div class="clear"></div>
+                </section>*@
+
+
+
+
+        </div>
+    </div>
+</div>
+
+

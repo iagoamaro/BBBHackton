@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace BBBHackton.Models
@@ -8,6 +9,37 @@ namespace BBBHackton.Models
         [Required]
         [Display(Name = "Email")]
         public string Email { get; set; }
+        [Required]
+        [Display(Name = "Primeiro Nome")]
+        public string FirstName { get; set; }
+        [Required]
+        [Display(Name = "Sobrenome")]
+        public string LastName { get; set; }
+        [Required]
+        [Display(Name = "Data de Nascimento")]
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:dd-MM-yyyy}", ApplyFormatInEditMode = true)]
+        public DateTime DataNasc { get; set; }
+        [Required]
+        
+        public string LinkSocialPerfil { get; set; }
+        [Required]
+        [Display(Name = "Sexo")]
+        public string Genero { get; set; }
+        [Required]
+        [Display(Name = "Local")]
+        public string Locale { get; set; }
+        [Required]        
+        public string Foto { get; set; }
+
+
+        [Display(Name = "Nome Completo")]
+        public string FullName { get; set; }
+
+        [Required]
+        [Display(Name = "Sobre mim")]
+        public string AboutMe { get; set; }
+
     }
 
     public class ExternalLoginListViewModel

@@ -1,0 +1,55 @@
+﻿@model IEnumerable<BBBHackton.Data.Model.Curso>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Cursos</h2>
+
+<p>
+    @Html.ActionLink("Adicionar curso", "Create",null,new {@class= "btn btn-primary", @style= "box-shadow:10px 10px 5px #888888;" })
+</p>
+<div style="box-shadow:10px 10px 5px #888888;">
+    <table class="table table-hover table-striped">
+        <tr>
+
+            <th>
+                @Html.DisplayNameFor(model => model.NomeCurso)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Universidade)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataInicio)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataConclusao)
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>
+                    @Html.DisplayFor(modelItem => item.NomeCurso)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Universidade)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DataInicio)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DataConclusao)
+                </td>
+                <td>
+                    @Html.ActionLink("Editar", "Edit", new { id = item.Id }, new { @class = "btn btn-default" }) |
+                    @Html.ActionLink("Deletar", "Delete", new { id = item.Id }, new { @class = "btn btn-danger" })
+                </td>
+            </tr>
+        }
+
+    </table>
+</div>

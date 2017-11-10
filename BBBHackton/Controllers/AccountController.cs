@@ -9,6 +9,10 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using BBBHackton.Models;
+using Facebook;
+using BBBHackton.Data.Service.EF;
+using BBBHackton.Data.Model;
+using BBBHackton.Data.Context;
 
 namespace BBBHackton.Controllers
 {
@@ -17,15 +21,17 @@ namespace BBBHackton.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
+        private PerfilEF _perfilManager = new PerfilEF();
 
         public AccountController()
         {
         }
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager )
+        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
         {
             UserManager = userManager;
             SignInManager = signInManager;
+            
         }
 
         public ApplicationSignInManager SignInManager
@@ -34,9 +40,9 @@ namespace BBBHackton.Controllers
             {
                 return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
             }
-            private set 
-            { 
-                _signInManager = value; 
+            private set
+            {
+                _signInManager = value;
             }
         }
 
@@ -120,7 +126,7 @@ namespace BBBHackton.Controllers
             // If a user enters incorrect codes for a specified amount of time then the user account 
             // will be locked out for a specified amount of time. 
             // You can configure the account lockout settings in IdentityConfig
-            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent:  model.RememberMe, rememberBrowser: model.RememberBrowser);
+            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent: model.RememberMe, rememberBrowser: model.RememberBrowser);
             switch (result)
             {
                 case SignInStatus.Success:
@@ -151,12 +157,17 @@ namespace BBBHackton.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var user = new ApplicationUser
+                {
+                    UserName = model.Email,
+                    Email = model.Email
+
+                };
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
+                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+
                     // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
                     // Send an email with this link
                     // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
@@ -333,7 +344,7 @@ namespace BBBHackton.Controllers
             switch (result)
             {
                 case SignInStatus.Success:
-                    return RedirectToLocal(returnUrl);
+                    return RedirectToAction("Index","Perfil", null);
                 case SignInStatus.LockedOut:
                     return View("Lockout");
                 case SignInStatus.RequiresVerification:
@@ -343,7 +354,25 @@ namespace BBBHackton.Controllers
                     // If the user does not have an account, then prompt the user to create an account
                     ViewBag.ReturnUrl = returnUrl;
                     ViewBag.LoginProvider = loginInfo.Login.LoginProvider;
-                    return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = loginInfo.Email });
+                    //Obtenemos dados do perfil do facebook
+                    //Agregado
+                    var identity = AuthenticationManager.GetExternalIdentity(DefaultAuthenticationTypes.ExternalCookie);
+                    var access_token = identity.FindFirstValue("FacebookAccessToken");
+                    var fb = new FacebookClient(access_token);
+                    dynamic userFbData = fb.Get("/me?fields=id,name,first_name,last_name,birthday,link,gender,address,email");
+                    dynamic foto = fb.Get("/me?fields=picture.width(200)");
+                    return View("ExternalLoginConfirmation",
+                        new ExternalLoginConfirmationViewModel
+                        {
+                            Email = userFbData.email,
+                            FirstName = userFbData.first_name,
+                            LastName = userFbData.last_name,
+                            FullName = userFbData.name,
+                            Foto = foto.picture.data.url,
+                            Genero = userFbData.gender,
+                            LinkSocialPerfil = userFbData.link,
+                            Locale = userFbData.address
+                        });
             }
         }
 
@@ -358,28 +387,51 @@ namespace BBBHackton.Controllers
             {
                 return RedirectToAction("Index", "Manage");
             }
+            var identity = AuthenticationManager.GetExternalIdentity(DefaultAuthenticationTypes.ExternalCookie);
+            var access_token = identity.FindFirstValue("FacebookAccessToken");
+            var fb = new FacebookClient(access_token);
+            dynamic userFbData = fb.Get("/me?fields=id,name,first_name,last_name,birthday,link,gender,address,picture.width(200),email");
+            model.LinkSocialPerfil = userFbData.link;
+            model.FullName = userFbData.name;
+            model.Foto = userFbData.picture.data.url;
 
-            if (ModelState.IsValid)
+
+
+            // Get the information about the user from the external login provider
+            var info = await AuthenticationManager.GetExternalLoginInfoAsync();
+            if (info == null)
             {
-                // Get the information about the user from the external login provider
-                var info = await AuthenticationManager.GetExternalLoginInfoAsync();
-                if (info == null)
-                {
-                    return View("ExternalLoginFailure");
-                }
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-                var result = await UserManager.CreateAsync(user);
+                return View("ExternalLoginFailure");
+            }
+
+            var perfil = new Perfil()
+            {
+                FullName = model.FullName,
+                DataNascimento = model.DataNasc,
+                Foto = model.Foto,
+                LinkSocialMedia = model.LinkSocialPerfil,
+                AboutMe = model.AboutMe
+            };
+            var _perfilId = _perfilManager.Create(perfil);
+            var user = new ApplicationUser
+            {
+                UserName = model.Email,
+                Email = model.Email,
+                Perfil = perfil
+            };
+            var result = await UserManager.CreateAsync(user);
+
+            if (result.Succeeded)
+            {
+                result = await UserManager.AddLoginAsync(user.Id, info.Login);
                 if (result.Succeeded)
                 {
-                    result = await UserManager.AddLoginAsync(user.Id, info.Login);
-                    if (result.Succeeded)
-                    {
-                        await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
-                        return RedirectToLocal(returnUrl);
-                    }
+                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+                    return RedirectToAction("Index", "Perfil");
                 }
-                AddErrors(result);
             }
+            AddErrors(result);
+
 
             ViewBag.ReturnUrl = returnUrl;
             return View(model);

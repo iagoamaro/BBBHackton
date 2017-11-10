@@ -6,6 +6,8 @@ using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.Google;
 using Owin;
 using BBBHackton.Models;
+using Microsoft.Owin.Security.Facebook;
+using System.Threading.Tasks;
 
 namespace BBBHackton
 {
@@ -54,9 +56,20 @@ namespace BBBHackton
             //   consumerKey: "",
             //   consumerSecret: "");
 
-            //app.UseFacebookAuthentication(
-            //   appId: "",
-            //   appSecret: "");
+            app.UseFacebookAuthentication(new FacebookAuthenticationOptions()
+            {
+               AppId = "1518355038255209",
+               AppSecret = "41e986ebc20a8654697f43a63bddd258",
+               Provider = new FacebookAuthenticationProvider
+               {
+                   OnAuthenticated = context =>
+                   {
+                       context.Identity.AddClaim(new System.Security.Claims.Claim("FacebookAccessToken", context.AccessToken));
+                       return Task.FromResult(true);
+                   }
+               }
+
+            });
 
             //app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
             //{
